@@ -13,4 +13,7 @@ public class DemoView {
     private Long superId;
 
     private String name;
+
+    private String value;
+
 }

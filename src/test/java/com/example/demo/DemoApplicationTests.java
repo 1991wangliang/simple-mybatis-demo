@@ -15,6 +15,7 @@ import org.springframework.util.Assert;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 @SpringBootTest
@@ -102,20 +103,21 @@ class DemoApplicationTests {
 
     @Test
     void viewList(){
+        Object state = null;
         List<DemoView> list =
                 demoMapper.queryView(
                         DemoView.class,
                         QueryBuilder.Build()
-                                .select("select name,super_id from t_demo")
+                                .select("select * from t_demo d left join t_refrigerator r on d.id = r.ID ")
                                 .where()
-//                                .date("time","2020-04-12")
-//                                .or()
-                                .equal("id",1)
-//                                .and()
-//                                .in("id",1,2,3,4,5,6,7,8,9,10)
-//                                .and()
-//                                .like("name","2")
-                                .orderBy("name desc")
+                                .condition("d.id between #{small} and #{larger}", Map.of("small",1,"larger",10))
+                                .and()
+                                .condition("r.state = #{state}",state)
+                                .and()
+                                .condition("d.id in (${ids})",1,2,3,4,5,6,7,8,9,10)
+                                .and()
+                                .condition("d.name like '%${name}%'","")
+                                .orderBy("d.id desc")
                                 .builder());
         log.info("list:{}",list);
     }
@@ -123,7 +125,7 @@ class DemoApplicationTests {
     @Test
     void queryList(){
         //select * from t_demo where name = '123'
-        List<Demo> list = demoMapper.query(QueryBuilder.Build().where().equal("name","123").builder());
+        List<Demo> list = demoMapper.query(QueryBuilder.Build().where().condition("name=#{name}","123").builder());
         log.info("list:{}",list);
     }
 
