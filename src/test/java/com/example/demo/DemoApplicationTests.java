@@ -3,6 +3,8 @@ package com.example.demo;
 import com.codingapi.simplemybatis.page.PageList;
 import com.codingapi.simplemybatis.query.QueryBuilder;
 import com.codingapi.simplemybatis.tree.TreeList;
+import com.codingapi.simplemybatis.utils.MapCamelUtils;
+import com.codingapi.simplemybatis.utils.MapListCamelParser;
 import com.example.demo.entity.Demo;
 import com.example.demo.entity.State;
 import com.example.demo.mapper.DemoMapper;
@@ -17,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @SpringBootTest
 @Slf4j
@@ -120,6 +123,28 @@ class DemoApplicationTests {
                                 .orderBy("d.id desc")
                                 .builder());
         log.info("list:{}",list);
+    }
+
+    @Test
+    void queryMapList(){
+        Object state = null;
+        List<Map<String,Object>> list =
+                demoMapper.queryMap(
+                        QueryBuilder.Build()
+                                .select("select * from t_demo d left join t_refrigerator r on d.id = r.ID ")
+                                .where()
+                                .condition("d.id between #{small} and #{larger}", Map.of("small",1,"larger",10))
+                                .and()
+                                .condition("r.state = #{state}",state)
+                                .and()
+                                .condition("d.id in (${ids})",1,2,3,4,5,6,7,8,9,10)
+                                .and()
+                                .condition("d.name like '%${name}%'","")
+                                .orderBy("d.id desc")
+                                .builder());
+        //将map字段统一
+        MapListCamelParser mapListCamelParser = new MapListCamelParser(list);
+        log.info("list:{}",mapListCamelParser.parser());
     }
 
     @Test
